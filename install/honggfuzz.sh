@@ -22,7 +22,7 @@ mkdir -p ${BUILD_DIR}
 cd ${SRC_DIR} || exit
 
 # install
-make -j8
-make -j8 install
+make -j64
+make -j64 install
 
 echo "HonggFuzz is installed"
