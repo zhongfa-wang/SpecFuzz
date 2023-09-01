@@ -518,10 +518,10 @@ bool X86SpeculativeLoadHardeningPass::runOnMachineFunction(
 
   // We support an alternative hardening technique based on a debug flag.
   /* modified: comment out to check the execution value without hardening*/
-  // if (HardenEdgesWithLFENCE) {
-  //   hardenEdgesWithLFENCE(MF);
-  //   return true;
-  // }
+  if (HardenEdgesWithLFENCE) {
+    hardenEdgesWithLFENCE(MF);
+    return true;
+  }
 
   // Create a dummy debug loc to use for all the generated code here.
   DebugLoc Loc;
@@ -716,7 +716,7 @@ void X86SpeculativeLoadHardeningPass::hardenEdgesWithLFENCE(
     auto InsertPt = MBB->SkipPHIsAndLabels(MBB->begin());
     /* random number */
     randomNum = dis(gen);
-    if (randomNum <= 100){
+    if (randomNum <= 1){
       BuildMI(*MBB, InsertPt, DebugLoc(), TII->get(X86::LFENCE));
     }
     ++NumInstsInserted;
