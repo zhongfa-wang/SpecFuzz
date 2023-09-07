@@ -716,7 +716,7 @@ void X86SpeculativeLoadHardeningPass::hardenEdgesWithLFENCE(
     auto InsertPt = MBB->SkipPHIsAndLabels(MBB->begin());
     /* random number */
     randomNum = dis(gen);
-    if (randomNum <= 1){
+    if (randomNum <= 100){
       BuildMI(*MBB, InsertPt, DebugLoc(), TII->get(X86::LFENCE));
     }
     ++NumInstsInserted;

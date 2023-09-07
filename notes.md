@@ -48,6 +48,10 @@ cp -r /home/zhongfa/SpecFuzz/example/usesec20/libhtp/. /home/zhongfa/benchmarks/
 cd /home/zhongfa/benchmarks/libhtp-benchmark/libhtp
 sudo chmod u+x autogen.sh
 ./autogen.sh
+
+cd /home/zhongfa/benchmarks/libhtp-benchmark
+sed -i 's/TARGET=test_bench/TARGET=test_all/' Makefile
+
 cd /home/zhongfa/benchmarks/libhtp-benchmark
 make sf SF_COLLECT=1
 make clean
@@ -83,7 +87,7 @@ mv /home/zhongfa/benchmarks/openssl-benchmark/openssl/Makefile /home/zhongfa/ben
 cd /home/zhongfa/benchmarks/openssl-benchmark
 make sf SF_COLLECT=1
 make clean
-honggfuzz  --run_time 3600 --exit_upon_crash -Q --no_fb_timeout 1 --timeout 120 -n 1 -f ./ -l hongg.log -- ./sf ___FILE___ 2>&1 | analyzer collect -r hongg.log -o analyzer.json -b sf >errors.log 2>&1
+honggfuzz  --run_time 3600 --exit_upon_crash -Q --no_fb_timeout 1 --timeout 120 -n 1 -f ./openssl/fuzz/corpora/server/ -l hongg.log -- ./sf ___FILE___ 2>&1 | analyzer collect -r hongg.log -o analyzer.json -b sf >errors.log 2>&1
 analyzer minimize analyzer.json -o minimal.json
 analyzer aggregate minimal.json -s $(llvm-7.0.1-config --bindir)/llvm-symbolizer -b ./sf -o aggregated.json
 analyzer query aggregated.json -o whitelist.txt
