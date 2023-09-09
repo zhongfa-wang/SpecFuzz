@@ -47,13 +47,12 @@ make patched PERF=1
 cp -r /home/zhongfa/SpecFuzz/example/usesec20/libhtp/. /home/zhongfa/benchmarks/libhtp-benchmark/
 cd /home/zhongfa/benchmarks/libhtp-benchmark/libhtp
 sudo chmod u+x autogen.sh
-./autogen.sh
+sudo ./autogen.sh
 
 cd /home/zhongfa/benchmarks/libhtp-benchmark
 sed -i 's/TARGET=test_bench/TARGET=test_all/' Makefile
-
-cd /home/zhongfa/benchmarks/libhtp-benchmark
-make sf SF_COLLECT=1
+sed -i 's/LIB_DIR:=./LIB_DIR:= libhtp/' Makefile
+sudo make sf SF_COLLECT=1 HONGG_SRC=/usr/local/honggfuzz-589a9fb92/src
 make clean
 
 honggfuzz  --run_time 3600 --exit_upon_crash -Q --no_fb_timeout 1 --timeout 120 -n 1 -f ./ -l hongg.log -- ./sf ___FILE___ 2>&1 | analyzer collect -r hongg.log -o analyzer.json -b sf >errors.log 2>&1
@@ -66,13 +65,14 @@ srcdir=test/files ./patched --gtest_filter=Benchmark.ConnectionWithManyTransacti
 ## libyaml
 cp -r /home/zhongfa/SpecFuzz/example/usesec20/libyaml/. /home/zhongfa/benchmarks/libyaml-benchmark
 cp /home/zhongfa/SpecFuzz/example/usesec20/libyaml/fuzzer.c /home/zhongfa/benchmarks/libyaml-benchmark/libyaml/tests
+sed -i 's/LIB_DIR:=./LIB_DIR:= libyaml/' /home/zhongfa/benchmarks/libyaml-benchmark/Makefile
 cd /home/zhongfa/benchmarks/libyaml-benchmark/libyaml/tests
 sed -i 's/run-parser-test-suite run-emitter-test-suite/run-parser-test-suite run-emitter-test-suite fuzzer/' Makefile.am
 
 cd /home/zhongfa/benchmarks/libyaml-benchmark/libyaml 
 ./bootstrap
 cd /home/zhongfa/benchmarks/libyaml-benchmark/
-make sf SF_COLLECT=1 #sudo make sf SF_COLLECT=1 HONGG_SRC=/usr/local/honggfuzz-589a9fb92/src
+sudo make sf SF_COLLECT=1 HONGG_SRC=/usr/local/honggfuzz-589a9fb92/src
 make clean
 honggfuzz  --run_time 3600 --exit_upon_crash -Q --no_fb_timeout 1 --timeout 120 -n 1 -f ./ -l hongg.log -- ./sf ___FILE___ 2>&1 | analyzer collect -r hongg.log -o analyzer.json -b sf >errors.log 2>&1
 analyzer minimize analyzer.json -o minimal.json
@@ -84,10 +84,12 @@ make patched PERF=1
 ## openssl
 cp -r /home/zhongfa/SpecFuzz/example/usesec20/openssl/. /home/zhongfa/benchmarks/openssl-benchmark/openssl
 mv /home/zhongfa/benchmarks/openssl-benchmark/openssl/Makefile /home/zhongfa/benchmarks/openssl-benchmark/
+sed -i 's/LIB_DIR:=./LIB_DIR:= openssl/' /home/zhongfa/benchmarks/openssl-benchmark/Makefile
 cd /home/zhongfa/benchmarks/openssl-benchmark
-make sf SF_COLLECT=1
+sudo make sf SF_COLLECT=1 HONGG_SRC=/usr/local/honggfuzz-589a9fb92/src
 make clean
-honggfuzz  --run_time 3600 --exit_upon_crash -Q --no_fb_timeout 1 --timeout 120 -n 1 -f ./openssl/fuzz/corpora/server/ -l hongg.log -- ./sf ___FILE___ 2>&1 | analyzer collect -r hongg.log -o analyzer.json -b sf >errors.log 2>&1
+cd /home/zhongfa/benchmarks/openssl-benchmark
+honggfuzz  --run_time 3600 --exit_upon_crash -Q --no_fb_timeout 1 --timeout 120 -n 1 -f ./openssl/fuzz/corpora/server -l hongg.log -- ./sf ___FILE___ 2>&1 | analyzer collect -r hongg.log -o analyzer.json -b sf >errors.log 2>&1
 analyzer minimize analyzer.json -o minimal.json
 analyzer aggregate minimal.json -s $(llvm-7.0.1-config --bindir)/llvm-symbolizer -b ./sf -o aggregated.json
 analyzer query aggregated.json -o whitelist.txt

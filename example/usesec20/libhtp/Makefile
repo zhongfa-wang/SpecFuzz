@@ -5,7 +5,7 @@ include ../common.mk
 CFLAGS+=-Wno-mismatched-tags
 
 ifdef PERF
-	TARGET=test_bench
+	TARGET=test_all
 else
 	TARGET=test_fuzz
 endif
