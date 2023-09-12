@@ -4,7 +4,7 @@ LIB_DIR:=.
 include ../common.mk
 
 ifdef PERF
-	TARGET=run-loader
+	TARGET=run-scanner
 else
 	TARGET=fuzzer
 endif

@@ -66,6 +66,7 @@ srcdir=test/files ./patched --gtest_filter=Benchmark.ConnectionWithManyTransacti
 cp -r /home/zhongfa/SpecFuzz/example/usesec20/libyaml/. /home/zhongfa/benchmarks/libyaml-benchmark
 cp /home/zhongfa/SpecFuzz/example/usesec20/libyaml/fuzzer.c /home/zhongfa/benchmarks/libyaml-benchmark/libyaml/tests
 sed -i 's/LIB_DIR:=./LIB_DIR:= libyaml/' /home/zhongfa/benchmarks/libyaml-benchmark/Makefile
+sed -i './TARGET=run-loader/TARGET=run-scanner/' /home/zhongfa/benchmarks/libyaml-benchmark/Makefile
 cd /home/zhongfa/benchmarks/libyaml-benchmark/libyaml/tests
 sed -i 's/run-parser-test-suite run-emitter-test-suite/run-parser-test-suite run-emitter-test-suite fuzzer/' Makefile.am
 
@@ -80,6 +81,8 @@ analyzer aggregate minimal.json -s $(llvm-7.0.1-config --bindir)/llvm-symbolizer
 analyzer query aggregated.json -o whitelist.txt
 make patched PERF=1
 ./patched small.yaml
+**The contents on the small.yaml should be multiplied upto 226k+ lines.**
+**The benchmark should be `tests/run-scanner`, not `tests/run-loader`.** The `run-loader` takes too short time
 
 ## openssl
 cp -r /home/zhongfa/SpecFuzz/example/usesec20/openssl/. /home/zhongfa/benchmarks/openssl-benchmark/openssl
