@@ -548,20 +548,20 @@ bool X86SpeculativeLoadHardeningPass::runOnMachineFunction(
       .addImm(PoisonVal);
   ++NumInstsInserted;
 
-  /* Modified: comment out the hardening of calling and ret */
-  // If we have loads being hardened and we've asked for call and ret edges to
-  // get a full fence-based mitigation, inject that fence.
-  if (HasVulnerableLoad && FenceCallAndRet) {
-    // We need to insert an LFENCE at the start of the function to suspend any
-    // incoming misspeculation from the caller. This helps two-fold: the caller
-    // may not have been protected as this code has been, and this code gets to
-    // not take any specific action to protect across calls.
-    // FIXME: We could skip this for functions which unconditionally return
-    // a constant.
-    BuildMI(Entry, EntryInsertPt, Loc, TII->get(X86::LFENCE));
-    ++NumInstsInserted;
-    ++NumLFENCEsInserted;
-  }
+  // /* modified: comment out the hardening of calling and ret */
+  // // If we have loads being hardened and we've asked for call and ret edges to
+  // // get a full fence-based mitigation, inject that fence.
+  // if (HasVulnerableLoad && FenceCallAndRet) {
+  //   // We need to insert an LFENCE at the start of the function to suspend any
+  //   // incoming misspeculation from the caller. This helps two-fold: the caller
+  //   // may not have been protected as this code has been, and this code gets to
+  //   // not take any specific action to protect across calls.
+  //   // FIXME: We could skip this for functions which unconditionally return
+  //   // a constant.
+  //   BuildMI(Entry, EntryInsertPt, Loc, TII->get(X86::LFENCE));
+  //   ++NumInstsInserted;
+  //   ++NumLFENCEsInserted;
+  // }
 
   // If we guarded the entry with an LFENCE and have no conditionals to protect
   // in blocks, then we're done.
@@ -632,11 +632,11 @@ bool X86SpeculativeLoadHardeningPass::runOnMachineFunction(
   if (HardenIndirectCallsAndJumps)
     unfoldCallAndJumpLoads(MF);
 
-  /* modified: commented out the hardening mechanism */
-  // Now that we have the predicate state available at the start of each block
-  // in the CFG, trace it through each block, hardening vulnerable instructions
-  // as we go.
-  tracePredStateThroughBlocksAndHarden(MF);
+  // /* modified: commented out the hardening mechanism */
+  // // Now that we have the predicate state available at the start of each block
+  // // in the CFG, trace it through each block, hardening vulnerable instructions
+  // // as we go.
+  // tracePredStateThroughBlocksAndHarden(MF);
 
   // Now rewrite all the uses of the pred state using the SSA updater to insert
   // PHIs connecting the state between blocks along the CFG edges.
