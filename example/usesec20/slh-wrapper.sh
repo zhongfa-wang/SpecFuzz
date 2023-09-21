@@ -25,6 +25,8 @@ flag_load_list=0
 debug=0
 flag_lfence=0
 flag_file_list=0
+#x%
+lfence_insert_flag=0
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -105,6 +107,14 @@ while [ "$#" -gt 0 ]; do
             if [ $flag_file_list == 0 ]; then
                 LLCFLAGS+=" -x86-speculative-load-hardening-whitelist-modules=$2"
                 flag_file_list=1
+            fi
+            shift
+        ;;
+        # insert fence with certain proprotion
+        --percentage)
+            if [ $lfence_insert_flag == 0 ]; then
+                LLCFLAGS+=" -x86-speculative-load-hardening-insert-fence-proportionately=$2"
+                lfence_insert_flag=1
             fi
             shift
         ;;

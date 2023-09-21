@@ -135,6 +135,11 @@ static cl::opt<std::string> WhitelistModulesFile(
     cl::desc("Skip hardening of the modules listed in this file."),
     cl::init(""), cl::Hidden);
 // SpecFuzz patch - end
+// insert fence with certain proprotion
+static cl::opt<int> InsertFenceProportionally(
+    PASS_KEY "-insert-fence-proportionally",
+    cl::desc("Insert lfence with a given proportion"),
+    cl::init(-1), cl::Hidden);
 
 namespace llvm {
 
@@ -517,8 +522,13 @@ bool X86SpeculativeLoadHardeningPass::runOnMachineFunction(
     return false;
 
   // We support an alternative hardening technique based on a debug flag.
-  /* modified: comment out to check the execution value without hardening*/
-  if (HardenEdgesWithLFENCE) {
+  // if (HardenEdgesWithLFENCE) {
+  //   hardenEdgesWithLFENCE(MF);
+  //   return true;
+  // }
+  /* modified: when flag -insert-fence-proportionally is not passed && 
+  falg lfence is passed, enable hardenEdgesWithLFENCE*/
+  if (HardenEdgesWithLFENCE || InsertFenceProportionally == -1) {
     hardenEdgesWithLFENCE(MF);
     return true;
   }
@@ -548,7 +558,6 @@ bool X86SpeculativeLoadHardeningPass::runOnMachineFunction(
       .addImm(PoisonVal);
   ++NumInstsInserted;
 
-  // /* modified: comment out the hardening of calling and ret */
   // // If we have loads being hardened and we've asked for call and ret edges to
   // // get a full fence-based mitigation, inject that fence.
   // if (HasVulnerableLoad && FenceCallAndRet) {
@@ -562,6 +571,18 @@ bool X86SpeculativeLoadHardeningPass::runOnMachineFunction(
   //   ++NumInstsInserted;
   //   ++NumLFENCEsInserted;
   // }
+  /* modified: when the flag -insert-fence-proportionally is not passed
+   enable fencing call and return (slh by SpecFuzz)*/
+  if (InsertFenceProportionally == -1)
+  { 
+    if (HasVulnerableLoad && FenceCallAndRet) {
+      BuildMI(Entry, EntryInsertPt, Loc, TII->get(X86::LFENCE));
+      ++NumInstsInserted;
+      ++NumLFENCEsInserted;
+    }
+  }
+  
+
 
   // If we guarded the entry with an LFENCE and have no conditionals to protect
   // in blocks, then we're done.
@@ -632,11 +653,17 @@ bool X86SpeculativeLoadHardeningPass::runOnMachineFunction(
   if (HardenIndirectCallsAndJumps)
     unfoldCallAndJumpLoads(MF);
 
-  // /* modified: commented out the hardening mechanism */
   // // Now that we have the predicate state available at the start of each block
   // // in the CFG, trace it through each block, hardening vulnerable instructions
   // // as we go.
   // tracePredStateThroughBlocksAndHarden(MF);
+  /* modified: when flag -insert-fence-proportionally is not passed, enable 
+  tracePredStateThroughBlocksAndHarden*/
+  if (InsertFenceProportionally == -1)
+  {
+    tracePredStateThroughBlocksAndHarden(MF);
+  }
+  
 
   // Now rewrite all the uses of the pred state using the SSA updater to insert
   // PHIs connecting the state between blocks along the CFG edges.
@@ -700,27 +727,48 @@ void X86SpeculativeLoadHardeningPass::hardenEdgesWithLFENCE(
       if (!SuccMBB->isEHPad())
         Blocks.insert(SuccMBB);
   }
-  /* modified: comment out the origin and replace it with random number */
   // for (MachineBasicBlock *MBB : Blocks) {
   //   auto InsertPt = MBB->SkipPHIsAndLabels(MBB->begin());
   //   BuildMI(*MBB, InsertPt, DebugLoc(), TII->get(X86::LFENCE));
   //   ++NumInstsInserted;
   //   ++NumLFENCEsInserted;
   // }
-  /* modified: x% of hardening with lfence by random */
+  /*modified: when flag -insert-fence-proportionally is not passed,
+  or insert LFENCEs by 100%, enable the normal lfence function. 
+  When flag -insert-fence-proportionally is passed with value x, 
+  insert LFENCEs proportionally*/
+  int randomNum;
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<> dis(0, 100);
-  int randomNum;
-  for (MachineBasicBlock *MBB : Blocks) {
-    auto InsertPt = MBB->SkipPHIsAndLabels(MBB->begin());
-    /* random number */
-    randomNum = dis(gen);
-    if (randomNum < 100){
+  if (InsertFenceProportionally == -1 || InsertFenceProportionally == 100)
+  {
+    for (MachineBasicBlock *MBB : Blocks) {
+      auto InsertPt = MBB->SkipPHIsAndLabels(MBB->begin());
       BuildMI(*MBB, InsertPt, DebugLoc(), TII->get(X86::LFENCE));
+      ++NumInstsInserted;
+      ++NumLFENCEsInserted;
     }
-    ++NumInstsInserted;
-    ++NumLFENCEsInserted;
+  }else if (InsertFenceProportionally == 0)
+  {
+    for (MachineBasicBlock *MBB : Blocks) {
+      auto InsertPt = MBB->SkipPHIsAndLabels(MBB->begin());
+      // BuildMI(*MBB, InsertPt, DebugLoc(), TII->get(X86::LFENCE));
+      // ++NumInstsInserted;
+      // ++NumLFENCEsInserted;
+    }
+  }else if (InsertFenceProportionally > 0 || InsertFenceProportionally < 100)
+  {
+    for (MachineBasicBlock *MBB : Blocks) {
+      auto InsertPt = MBB->SkipPHIsAndLabels(MBB->begin());
+      /* random number */
+      randomNum = dis(gen);
+      if (randomNum < InsertFenceProportionally){
+        BuildMI(*MBB, InsertPt, DebugLoc(), TII->get(X86::LFENCE));
+        ++NumInstsInserted;
+        ++NumLFENCEsInserted;
+      }
+    }
   }
 }
 
