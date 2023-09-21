@@ -113,7 +113,7 @@ while [ "$#" -gt 0 ]; do
         # insert fence with certain proprotion
         --percentage)
             if [ $lfence_insert_flag == 0 ]; then
-                LLCFLAGS+=" -x86-speculative-load-hardening-insert-fence-proportionally"=$2"
+                LLCFLAGS+=" -x86-speculative-load-hardening-insert-fence-proportionally=$2"
                 lfence_insert_flag=1
             fi
             shift
