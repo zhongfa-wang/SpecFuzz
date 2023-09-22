@@ -528,7 +528,7 @@ bool X86SpeculativeLoadHardeningPass::runOnMachineFunction(
   // }
   /* modified: when flag -insert-fence-proportionally is not passed && 
   falg lfence is passed, enable hardenEdgesWithLFENCE*/
-  if (HardenEdgesWithLFENCE || InsertFenceProportionally == -1) {
+  if (HardenEdgesWithLFENCE || InsertFenceProportionally >= 0) {
     hardenEdgesWithLFENCE(MF);
     return true;
   }

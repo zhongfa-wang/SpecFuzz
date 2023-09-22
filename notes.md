@@ -1,4 +1,6 @@
 Installing environment: Ubuntu LTS 18.04
+## build binary with proportionally inserted LFENCEs
+add PROP flag with the percentage you want: `PROP=xx`
 ## brotli
 rm patched sf
 make sf SF_COLLECT=1
@@ -44,6 +46,14 @@ make patched PERF=1
 
 
 ## libhtp
+needs to run 
+```
+sudo chmod u+x autogen.sh
+./autogen.sh
+./configure
+make
+```
+to get prepared.
 cp -r /home/zhongfa/SpecFuzz/example/usesec20/libhtp/. /home/zhongfa/benchmarks/libhtp-benchmark/
 cd /home/zhongfa/benchmarks/libhtp-benchmark/libhtp
 sudo chmod u+x autogen.sh
