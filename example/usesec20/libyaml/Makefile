@@ -1,5 +1,5 @@
 SRC:=
-LIB_DIR:=.
+LIB_DIR:= libyaml
 
 include ../common.mk
 
@@ -44,10 +44,18 @@ patched:
 	$(MAKE) run_build
 	cp $(LIB_DIR)/tests/$(TARGET) $@
 
+proportion:
+	cd $(LIB_DIR) && \
+		CC=$(CCSLH) CXX=$(CXXSLH) CFLAGS="$(CFLAGS) $(PROPORTION_FLAGS)" CXXFLAGS="$(CFLAGS) $(PROPORTION_FLAGS)" LDFLAGS="$(LDFLAGS) $(PROPORTION_LDFLAGS)" \
+		./configure --disable-shared
+	$(MAKE) run_build
+	cp $(LIB_DIR)/tests/$(TARGET) $@$(PROP)
+
 run_build:
 	$(MAKE) -C $(LIB_DIR) clean
-	$(MAKE) -j8 -C $(LIB_DIR)
-	$(MAKE) -j8 -C $(LIB_DIR)/tests $(TARGET)
+	$(MAKE) -C $(LIB_DIR)/tests clean
+	$(MAKE) -j16 -C $(LIB_DIR)
+	$(MAKE) -j16 -C $(LIB_DIR)/tests $(TARGET)
 
 clean:
 	rm -f *.o $(ALL_TYPES)

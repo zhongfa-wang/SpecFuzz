@@ -1,5 +1,5 @@
 SRC:=
-LIB_DIR:=.
+LIB_DIR:= openssl
 
 include ../common.mk
 CFLAGS+=-Wno-mismatched-tags
@@ -49,6 +49,13 @@ patched:
 		CC=$(CCSLH) CXX=$(CXXSLH) CFLAGS="$(CFLAGS) $(PATCH_FLAGS)" CXXFLAGS="$(CFLAGS) $(PATCH_FLAGS)" LDFLAGS="$(LDFLAGS) $(PATCH_LDFLAGS)"
 	$(MAKE) run_build
 	cp $(LIB_DIR)/$(TARGET) $@
+
+proportion:
+	cd $(LIB_DIR) && \
+		./config $(CONFIG_FLAGS) \
+		CC=$(CCSLH) CXX=$(CXXSLH) CFLAGS="$(CFLAGS) $(PROPORTION_FLAGS)" CXXFLAGS="$(CFLAGS) $(PROPORTION_FLAGS)" LDFLAGS="$(LDFLAGS) $(PROPORTION_LDFLAGS)"
+	$(MAKE) run_build
+	cp $(LIB_DIR)/$(TARGET) $@$(PROP)
 
 run_build:
 	cd $(LIB_DIR) && $(MAKE) clean

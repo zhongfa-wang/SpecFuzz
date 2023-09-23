@@ -34,5 +34,10 @@ For convenience, you could use a compiler wrapper `slh-wrapper.sh` that invokes 
 ```shell script
 	cp slh-wrapper.sh /usr/bin/clang-slh
 	cp slh-wrapper.sh /usr/bin/clang-slh++
-	sed -i -e 's:/clang$$:/clang++:g' /usr/bin/clang-slh++
+	sed -i -e 's/clang$/clang++/g' /usr/bin/clang-slh++
+```
+or 
+```shell script
+	cp slh-wrapper-c.sh /usr/bin/clang-slh
+	cp slh-wrapper-cpp.sh /usr/bin/clang-slh++
 ```

@@ -1,5 +1,5 @@
 SRC:=
-LIB_DIR:=.
+LIB_DIR:=libhtp
 
 include ../common.mk
 CFLAGS+=-Wno-mismatched-tags
@@ -35,11 +35,16 @@ patched:
 	$(MAKE) run_build
 	cp $(LIB_DIR)/test/$(TARGET) $@
 
+proportion:
+	cd $(LIB_DIR) && CC=$(CCSLH) CXX=$(CXXSLH) CFLAGS="$(CFLAGS) $(PROPORTION_FLAGS)" CXXFLAGS="$(CFLAGS) $(PROPORTION_FLAGS)" LDFLAGS="$(LDFLAGS) $(PROPORTION_LDFLAGS)" ./configure --disable-shared
+	$(MAKE) run_build
+	cp $(LIB_DIR)/test/$(TARGET) $@$(PROP)
+
 run_build:
 	$(MAKE) -C $(LIB_DIR) clean
 	$(MAKE) -C $(LIB_DIR)/test clean
 ifdef PERF
-	$(MAKE) -j12 -C $(LIB_DIR) test-compile-only
+	$(MAKE) -j16 -C $(LIB_DIR) test-compile-only
 else
 	$(MAKE) -j4 -C $(LIB_DIR)
 	$(MAKE) -j4 -C $(LIB_DIR)/test $(TARGET)
