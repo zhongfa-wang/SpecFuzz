@@ -38,7 +38,7 @@ patched:
 proportion:
 	cd $(LIB_DIR) && CC=$(CCSLH) CXX=$(CXXSLH) CFLAGS="$(CFLAGS) $(PROPORTION_FLAGS)" CXXFLAGS="$(CFLAGS) $(PROPORTION_FLAGS)" LDFLAGS="$(LDFLAGS) $(PROPORTION_LDFLAGS)" ./configure --disable-shared
 	$(MAKE) run_build
-	cp $(LIB_DIR)/test/$(TARGET) $@$(PROP)
+	cp $(LIB_DIR)/test/$(TARGET) $@
 
 run_build:
 	$(MAKE) -C $(LIB_DIR) clean

@@ -1,65 +1,54 @@
 SRC:=
-LIB_DIR:= openssl
+LIB_DIR:=libhtp
 
 include ../common.mk
 CFLAGS+=-Wno-mismatched-tags
 
-CONFIG_FLAGS=no-asm no-shared no-threads no-fips no-legacy no-tests enable-fuzz-afl \
-		enable-tls1_3 enable-weak-ssl-ciphers enable-rc5 enable-md2 \
-		enable-ssl3 enable-ssl3-method enable-nextprotoneg
-
 ifdef PERF
-	TARGET=apps/openssl
+	TARGET=test_all
 else
-	TARGET=fuzz/server
+	TARGET=test_fuzz
 endif
 
-
 native:
-	cd $(LIB_DIR) && \
-		./config $(CONFIG_FLAGS) \
-		CC=$(CC) CXX=$(CXX) CFLAGS="$(CFLAGS) $(NATIVE_FLAGS)" CXXFLAGS="$(CFLAGS) $(NATIVE_FLAGS)" LDFLAGS="$(LDFLAGS) $(NATIVE_LDFLAGS)"
+	cd $(LIB_DIR) && CC=$(CC) CXX=$(CXX) CFLAGS="$(CFLAGS) $(NATIVE_FLAGS)" CXXFLAGS="$(CFLAGS) $(NATIVE_FLAGS)" LDFLAGS="$(LDFLAGS) $(NATIVE_LDFLAGS)" ./configure --disable-shared
 	$(MAKE) run_build
-	cp $(LIB_DIR)/$(TARGET) $@
+	cp $(LIB_DIR)/test/$(TARGET) $@
 
 nativecov:
-	cd $(LIB_DIR) && \
-		./config $(CONFIG_FLAGS) \
-		CC=$(CCSF) CXX=$(CXXSF) CFLAGS="$(CFLAGS) $(NATIVECOV_FLAGS)" CXXFLAGS="$(CFLAGS) $(NATIVECOV_FLAGS)" LDFLAGS="$(LDFLAGS) $(NATIVECOV_LDFLAGS)"
+	cd $(LIB_DIR) && CC=$(CCSF) CXX=$(CXXSF) CFLAGS="$(CFLAGS) $(NATIVECOV_FLAGS)" CXXFLAGS="$(CFLAGS) $(NATIVECOV_FLAGS)" LDFLAGS="$(LDFLAGS) $(NATIVECOV_LDFLAGS)" ./configure --disable-shared
 	$(MAKE) run_build
-	cp $(LIB_DIR)/$(TARGET) $@
+	cp $(LIB_DIR)/test/$(TARGET) $@
 
 sf:
-	cd $(LIB_DIR) && \
-		./config $(CONFIG_FLAGS) \
-		CC=$(CCSF) CXX=$(CXXSF) CFLAGS="$(CFLAGS) $(SF_FLAGS)" CXXFLAGS="$(CFLAGS) $(SF_FLAGS)" LDFLAGS="$(LDFLAGS) $(SF_LDFLAGS)"
+	cd $(LIB_DIR) && CC=$(CCSF) CXX=$(CXXSF) CFLAGS="$(CFLAGS) $(SF_FLAGS)" CXXFLAGS="$(CFLAGS) $(SF_FLAGS)" LDFLAGS="$(LDFLAGS) $(SF_LDFLAGS)" ./configure --disable-shared
 	$(MAKE) run_build
-	cp $(LIB_DIR)/$(TARGET) $@
+	cp $(LIB_DIR)/test/$(TARGET)  $@
 
 slh:
-	cd $(LIB_DIR) && \
-		./config $(CONFIG_FLAGS) \
-		CC=$(CCSLH) CXX=$(CXXSLH) CFLAGS="$(CFLAGS) $(SLH_FLAGS)" CXXFLAGS="$(CFLAGS) $(SLH_FLAGS)" LDFLAGS="$(LDFLAGS) $(SLH_LDFLAGS)"
+	cd $(LIB_DIR) && CC=$(CCSLH) CXX=$(CXXSLH) CFLAGS="$(CFLAGS) $(SLH_FLAGS)" CXXFLAGS="$(CFLAGS) $(SLH_FLAGS)" LDFLAGS="$(LDFLAGS) $(SLH_LDFLAGS)" ./configure --disable-shared
 	$(MAKE) run_build
-	cp $(LIB_DIR)/$(TARGET) $@
+	cp $(LIB_DIR)/test/$(TARGET) $@
 
 patched:
-	cd $(LIB_DIR) && \
-		./config $(CONFIG_FLAGS) \
-		CC=$(CCSLH) CXX=$(CXXSLH) CFLAGS="$(CFLAGS) $(PATCH_FLAGS)" CXXFLAGS="$(CFLAGS) $(PATCH_FLAGS)" LDFLAGS="$(LDFLAGS) $(PATCH_LDFLAGS)"
+	cd $(LIB_DIR) && CC=$(CCSLH) CXX=$(CXXSLH) CFLAGS="$(CFLAGS) $(PATCH_FLAGS)" CXXFLAGS="$(CFLAGS) $(PATCH_FLAGS)" LDFLAGS="$(LDFLAGS) $(PATCH_LDFLAGS)" ./configure --disable-shared
 	$(MAKE) run_build
-	cp $(LIB_DIR)/$(TARGET) $@
+	cp $(LIB_DIR)/test/$(TARGET) $@
 
 proportion:
-	cd $(LIB_DIR) && \
-		./config $(CONFIG_FLAGS) \
-		CC=$(CCSLH) CXX=$(CXXSLH) CFLAGS="$(CFLAGS) $(PROPORTION_FLAGS)" CXXFLAGS="$(CFLAGS) $(PROPORTION_FLAGS)" LDFLAGS="$(LDFLAGS) $(PROPORTION_LDFLAGS)"
+	cd $(LIB_DIR) && CC=$(CCSLH) CXX=$(CXXSLH) CFLAGS="$(CFLAGS) $(PROPORTION_FLAGS)" CXXFLAGS="$(CFLAGS) $(PROPORTION_FLAGS)" LDFLAGS="$(LDFLAGS) $(PROPORTION_LDFLAGS)" ./configure --disable-shared
 	$(MAKE) run_build
-	cp $(LIB_DIR)/$(TARGET) $@$(PROP)
+	cp $(LIB_DIR)/test/$(TARGET) $@
 
 run_build:
-	cd $(LIB_DIR) && $(MAKE) clean
-	cd $(LIB_DIR) && $(MAKE) -j12
+	$(MAKE) -C $(LIB_DIR) clean
+	$(MAKE) -C $(LIB_DIR)/test clean
+ifdef PERF
+	$(MAKE) -j16 -C $(LIB_DIR) test-compile-only
+else
+	$(MAKE) -j4 -C $(LIB_DIR)
+	$(MAKE) -j4 -C $(LIB_DIR)/test $(TARGET)
+endif
 
 clean:
 	rm -f *.o $(ALL_TYPES)
